@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+
+
+    :root {
+        --red: #ff7c7c;
+        --black: #21243d;
+        --blue: #88e1f2;
+        --yellow: #ffd082;
+    }
+
+    .container {
+        width: 100%;
+        height: 100%;
+    }
+
+    .text__container {
+        width: 100%;
+        height: 200px;
+        margin: 0 auto;
+        text-align: center;
+        background-color: var(--blue);
+        color: var(--black);
+        padding: 1rem 0 3rem 0;
+    }
+
+    .text__container p {
+        max-width: 600px;
+        margin: 1rem auto;
+    }
+
+    /* FORM */
+    .shortener__container {
+        height: 120px;
+        width: 100%;
+    }
+
+    .back__color {
+
+        height: 50px;
+        width: 100%;
+        z-index: -1;
+        position: absolute;
+        top: 200px;
+        left: 0;
+    }
+
+    .input__container {
+        z-index: 9;
+        background-color: rebeccapurple;
+        margin: 15px auto;
+        max-width: 800px;
+        height: 70px;
+        border-radius: 5px;
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+    }
+
+    .input__container input {
+        height: 35px;
+        width: 80%;
+        margin: auto;
+        border: none;
+        border-radius: 5px;
+        outline: none;
+        padding-left: 1rem;
+        color: var(--black);
+        font-size: 16px;
+    }
+
+    .input__container button {
+        height: 35px;
+        width: 80%;
+        margin: auto;
+        background-color: var(--red);
+        color: white;
+        border-radius: 5px;
+        outline: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .error__msg {
+        background-color: var(--red);
+        max-width: 300px;
+        position: fixed;
+        top: 196px;
+        left: 50%;
+        transform: translateX(50%);
+        margin: auto;
+        z-index: 6;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        visibility: hidden;
+        transition: all 0.8s ease-in;
+    }
+
+    .error__msg #error {
+        color: white;
+        padding: 10px;
+    }
+
+    .error__msg.show {
+        visibility: visible;
+        transform: translateX(-150%);
+    }
+
+    /* LINKS CONTAINER */
+
+    .links__container {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .links__container .link {
+        border: var(--yellow) 1px solid;
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        display: grid;
+        grid-template-columns: 3fr 3fr 1fr;
+    }
+
+    .link .long__link {
+        color: var(--red);
+        margin-left: 1rem;
+    }
+
+    .link .short__link {
+        display: flex;
+        justify-content: center;
+    }
+
+    .link .copy__btn {
+        background-color: var(--blue);
+        padding: 3px 0;
+        width: 60px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        outline: none;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="text__container">
+            <h1>UrlShortner</h1>
+            <p>Paste your long Url we will provide shorter One</p>
+        </div>
+
+        <div class="error__msg">
+            <span id="error">You must paste a valed URL</span>
+        </div>
+
+        <form class="shortener__container">
+            <div class="back__color"></div>
+            <div class="input__container">
+                <input type="text" id="shortener" placeholder="Paste your link here">
+                <button id="submit__btn">Short it!</button>
+            </div>
+        </form>
+
+        <div class="links__container">
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+    <script>
+        const ItemCtrl = (function () {
+            const Item = function (id, url, shortUrl) {
+                this.id = id;
+                this.url = url;
+                this.shortUrl = shortUrl;
+            };
+
+            //data structure
+            const data = {
+                items: [
+
+                ],
+                currentItem: null
+            };
+
+            // public methods
+            return {
+                logData: function () {
+                    return data;
+                },
+                addLink: function (link) {
+                    let ID;
+
+                    if (data.items.length > 0) {
+                        ID = data.items[data.items.length - 1].id + 1;
+                    } else {
+                        ID = 0;
+                    }
+                    let shortLink;
+                    shortLink = ItemCtrl.generateLink();
+
+                    newItem = new Item(ID, link, shortLink);
+
+                    data.items.push(newItem);
+
+                    return newItem;
+                },
+
+                generateLink: function () {
+                    const c1 = ItemCtrl.generateCharacter();
+                    const c2 = ItemCtrl.generateCharacter();
+                    const c3 = ItemCtrl.generateCharacter();
+                    const c4 = ItemCtrl.generateCharacter();
+
+                    return 'http://sho.link/' + c1 + c2 + c3 + c4;
+                },
+
+                generateCharacter: function () {
+                    const arr = 'abcdefghijklmnopqrstuvwxyz1234567890';
+                    return arr[Math.floor(Math.random() * arr.length)];
+                },
+
+                getItemById: function (id) {
+                    let found = null;
+
+                    data.items.forEach(function (item) {
+                        if (item.id === id) {
+                            found = item;
+                        }
+                    })
+                    return found;
+                },
+
+                setCurrentLink: function (link) {
+                    data.currentItem = link;
+
+                    return data.currentItem.shortUrl;
+                }
+
+            }
+        })();
+
+
+        const UICtrl = (function () {
+
+            const UISelectors = {
+                linkInput: '#shortener',
+                shortItBtn: '#submit__btn',
+                linksContainer: '.links__container',
+                errorMsg: '.error__msg',
+                colyLink: '.copy__btn'
+            }
+
+
+            return {
+
+                getSelectors: function () {
+                    return UISelectors;
+                },
+
+                getLinkInput: function () {
+                    return {
+                        longLink: document.querySelector(UISelectors.linkInput).value
+                    }
+                },
+
+                errorLink: function () {
+                    const errorMsg = document.querySelector(UISelectors.errorMsg);
+                    errorMsg.className = 'error__msg show';
+
+                    setTimeout(function () {
+                        errorMsg.className = 'error__msg'
+                    }, 3000);
+
+                    UICtrl.clearInput()
+                },
+
+                clearInput: function () {
+                    document.querySelector(UISelectors.linkInput).value = '';
+                },
+
+                addListLink: function (item) {
+
+                    const div = document.createElement('div');
+
+                    div.className = 'link';
+                    div.id = `link-${item.id}`;
+                    div.innerHTML = `
+            <span class="long__link">${item.url}</span>
+            <span class="short__link">${item.shortUrl}</span>
+            <button class="copy__btn">Copy</button>
+            `;
+                    document.querySelector(UISelectors.linksContainer).insertAdjacentElement('beforeend', div);
+                },
+                copyShortLink: function (link) {
+                    const textarea = document.createElement('textarea');
+                    const copiedLink = link;
+
+                    textarea.value = copiedLink;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    textarea.remove();
+                },
+                changeButton: function (btn) {
+                    btn.style.backgroundColor = '#21243d';
+                    btn.style.color = 'white';
+                    btn.innerHTML = 'Copied!';
+                }
+            }
+        })();
+
+
+        const App = (function (ItemCtrl, UICtrl) {
+            const loadEventListeners = function () {
+
+                const UISelectors = UICtrl.getSelectors();
+                document.querySelector(UISelectors.shortItBtn).addEventListener('click', addLink);
+                document.querySelector(UISelectors.linksContainer).addEventListener('click', copyLink);
+            }
+
+
+            const addLink = function (e) {
+
+                const input = UICtrl.getLinkInput();
+
+                if (input.longLink !== '') {
+                    const re = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
+
+                    if (re.test(input.longLink) == false) {
+                        UICtrl.errorLink();
+                    } else if (re.test(input.longLink) == true) {
+
+                        const newLink = ItemCtrl.addLink(input.longLink);
+
+                        UICtrl.addListLink(newLink);
+
+                        UICtrl.clearInput();
+                    }
+                }
+
+                e.preventDefault();
+            };
+
+            const copyLink = function (e) {
+                if (e.target.classList.contains('copy__btn')) {
+                    const linkId = e.target.parentNode.id;
+                    const linkArr = linkId.split('-');
+                    const id = parseInt(linkArr[1]);
+
+                    const linkToCopy = ItemCtrl.getItemById(id);
+
+                    const currentLink = ItemCtrl.setCurrentLink(linkToCopy);
+                    UICtrl.copyShortLink(currentLink);
+                    UICtrl.changeButton(e.target);
+
+                }
+
+            }
+
+            return {
+                init: function () {
+                    loadEventListeners();
+                }
+            }
+        })(ItemCtrl, UICtrl);
+
+        App.init();
+    </script>
+</body>
+
+</html>
